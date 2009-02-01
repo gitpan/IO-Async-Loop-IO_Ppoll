@@ -7,10 +7,12 @@ package IO::Async::Loop::IO_Ppoll;
 
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
-use IO::Async::Loop::IO_Poll 0.10;
+use IO::Async::Loop::IO_Poll 0.18;
 use base qw( IO::Async::Loop::IO_Poll );
+
+use IO::Async::SignalProxy; # just for signame2num
 
 use Carp;
 
@@ -138,12 +140,7 @@ sub attach_signal
 
    $self->{restore_SIG}->{$signal} = $SIG{$signal};
 
-   my $signum;
-   {
-      no strict 'refs';
-      local @_;
-      $signum = &{"POSIX::SIG$signal"};
-   }
+   my $signum = IO::Async::SignalProxy::signame2num( $signal );
 
    sigprocmask( SIG_BLOCK, POSIX::SigSet->new( $signum ) );
 
@@ -164,12 +161,7 @@ sub detach_signal
 
    delete $self->{restore_SIG}->{$signal};
    
-   my $signum;
-   {
-      no strict 'refs';
-      local @_;
-      $signum = &{"POSIX::SIG$signal"};
-   }
+   my $signum = IO::Async::SignalProxy::signame2num( $signal );
 
    sigprocmask( SIG_UNBLOCK, POSIX::SigSet->new( $signum ) );
 }

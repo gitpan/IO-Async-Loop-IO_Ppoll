@@ -1,4 +1,8 @@
 Revision history for IO-Async-Loop-IO_Ppoll
 
+0.02    CHANGES:
+         * Use IO::Async::SignalProxy::signame2num() to convert signal numbers
+           since it may know more than POSIX does
+
 0.01    First version, released on an unsuspecting world.
 

@@ -33,7 +33,7 @@ my $loop = IO::Async::Loop::IO_Ppoll->new( poll => $poll );
 
 ok( defined $loop, '$loop defined' );
 is( ref $loop, "IO::Async::Loop::IO_Ppoll", 'ref $loop is IO::Async::Loop::IO_Ppoll' );
-ok( $loop->isa( "IO::Async::Loop::IO_Poll" ), '$loop isa IO::Async::Loop::IO_Poll' );
+isa_ok( $loop, "IO::Async::Loop::IO_Poll", '$loop isa IO::Async::Loop::IO_Poll' );
 
 # Empty
 
