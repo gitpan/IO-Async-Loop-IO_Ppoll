@@ -1,18 +1,16 @@
 #  You may distribute under the terms of either the GNU General Public License
 #  or the Artistic License (the same terms as Perl itself)
 #
-#  (C) Paul Evans, 2007,2008 -- leonerd@leonerd.org.uk
+#  (C) Paul Evans, 2007-2009 -- leonerd@leonerd.org.uk
 
 package IO::Async::Loop::IO_Ppoll;
 
 use strict;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use IO::Async::Loop::IO_Poll 0.18;
 use base qw( IO::Async::Loop::IO_Poll );
-
-use IO::Async::SignalProxy; # just for signame2num
 
 use Carp;
 
@@ -31,7 +29,11 @@ L<IO::Async::Loop::IO_Ppoll> - a Loop using an C<IO::Ppoll> object
  my $loop = IO::Async::Loop::IO_Ppoll->new();
 
  $loop->add( ... );
- $loop->attach_signal( HUP => sub { ... } );
+
+ $loop->add( IO::Async::Signal->new(
+       name =< 'HUP',
+       on_receipt => sub { ... },
+ ) );
 
  $loop->loop_forever();
 
@@ -95,7 +97,7 @@ sub DESTROY
    my $self = shift;
 
    foreach my $signal ( keys %{ $self->{restore_SIG} } ) {
-      $self->detach_signal( $signal );
+      $self->unwatch_signal( $signal );
    }
 }
 
@@ -128,19 +130,16 @@ sub loop_once
 }
 
 # override
-sub attach_signal
+sub watch_signal
 {
    my $self = shift;
    my ( $signal, $code ) = @_;
 
    exists $SIG{$signal} or croak "Unrecognised signal name $signal";
 
-   # Don't allow anyone to trash an existing signal handler
-   !defined $SIG{$signal} or !ref $SIG{$signal} or croak "Cannot override signal handler for $signal";
-
    $self->{restore_SIG}->{$signal} = $SIG{$signal};
 
-   my $signum = IO::Async::SignalProxy::signame2num( $signal );
+   my $signum = $self->signame2num( $signal );
 
    sigprocmask( SIG_BLOCK, POSIX::SigSet->new( $signum ) );
 
@@ -148,7 +147,7 @@ sub attach_signal
 }
 
 # override
-sub detach_signal
+sub unwatch_signal
 {
    my $self = shift;
    my ( $signal ) = @_;
@@ -161,7 +160,7 @@ sub detach_signal
 
    delete $self->{restore_SIG}->{$signal};
    
-   my $signum = IO::Async::SignalProxy::signame2num( $signal );
+   my $signum = $self->signame2num( $signal );
 
    sigprocmask( SIG_UNBLOCK, POSIX::SigSet->new( $signum ) );
 }

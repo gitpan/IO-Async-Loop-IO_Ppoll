@@ -7,7 +7,7 @@ my $build = Module::Build->new
   (
    module_name => 'IO::Async::Loop::IO_Ppoll',
    requires => {
-                 'IO::Async::Loop' => 0.18,
+                 'IO::Async::Loop' => 0.20,
                  'IO::Ppoll' => 0.05,
                },
    build_requires => {

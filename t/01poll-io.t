@@ -2,38 +2,25 @@
 
 use strict;
 
-use Test::More tests => 37;
+use Test::More tests => 34;
 use Test::Exception;
-
-use IO::Socket::UNIX;
-use IO::Async::Notifier;
 
 use IO::Ppoll;
 
 use IO::Async::Loop::IO_Ppoll;
 
-( my $S1, my $S2 ) = IO::Socket::UNIX->socketpair( AF_UNIX, SOCK_STREAM, PF_UNSPEC ) or
-   die "Cannot create socket pair - $!";
+my $poll = IO::Ppoll->new();
+my $loop = IO::Async::Loop::IO_Ppoll->new( poll => $poll );
+
+ok( defined $loop, '$loop defined' );
+isa_ok( $loop, "IO::Async::Loop::IO_Ppoll", '$loop isa IO::Async::Loop::IO_Ppoll' );
+isa_ok( $loop, "IO::Async::Loop::IO_Poll", '$loop isa IO::Async::Loop::IO_Poll' );
+
+my ( $S1, $S2 ) = $loop->socketpair() or die "Cannot create socket pair - $!";
 
 # Need sockets in nonblocking mode
 $S1->blocking( 0 );
 $S2->blocking( 0 );
-
-my $readready = 0;
-my $writeready = 0;
-
-my $notifier = IO::Async::Notifier->new( handle => $S1,
-   on_read_ready  => sub { $readready = 1 },
-   on_write_ready => sub { $writeready = 1 },
-);
-
-my $poll = IO::Ppoll->new();
-
-my $loop = IO::Async::Loop::IO_Ppoll->new( poll => $poll );
-
-ok( defined $loop, '$loop defined' );
-is( ref $loop, "IO::Async::Loop::IO_Ppoll", 'ref $loop is IO::Async::Loop::IO_Ppoll' );
-isa_ok( $loop, "IO::Async::Loop::IO_Poll", '$loop isa IO::Async::Loop::IO_Poll' );
 
 # Empty
 
@@ -47,11 +34,12 @@ is( $count, 0, '$count while empty' );
 
 # Idle
 
-$loop->add( $notifier );
+my $readready = 0;
 
-is( $notifier->get_loop, $loop, '$notifier->__memberof_set == $loop' );
-
-dies_ok( sub { $loop->add( $notifier ) }, 'adding again produces error' );
+$loop->watch_io(
+   handle => $S1,
+   on_read_ready  => sub { $readready = 1 },
+);
 
 my $ready;
 $ready = $poll->poll( 0.1 );
@@ -85,7 +73,13 @@ is( $readready, 1, '$readready after post_poll' );
 $S1->getline(); # ignore return
 
 # Write-ready
-$notifier->want_writeready( 1 );
+
+my $writeready = 0;
+
+$loop->watch_io(
+   handle => $S1,
+   on_write_ready => sub { $writeready = 1 },
+);
 
 $ready = $poll->poll( 0.1 );
 
@@ -107,18 +101,16 @@ is( $writeready, 1, '$writeready after loop_once' );
 
 # loop_forever
 
-my $stdout_notifier = IO::Async::Notifier->new( handle => \*STDOUT,
-   on_read_ready => sub { },
+$loop->watch_io(
+   handle => \*STDOUT,
    on_write_ready => sub { $loop->loop_stop() },
-   want_writeready => 1,
 );
-$loop->add( $stdout_notifier );
 
 @handles = $poll->handles();
 # We can't guarantee the order here, but we can get 'sort' to do that
 is_deeply( [ sort @handles ],
            [ sort ( $S1, \*STDOUT ) ],
-           '@handles after adding stdout_notifier' );
+           '@handles after watching STDOUT' );
 
 $writeready = 0;
 
@@ -131,14 +123,21 @@ alarm( 0 );
 
 is( $writeready, 1, '$writeready after loop_forever' );
 
-$loop->remove( $stdout_notifier );
+$loop->unwatch_io(
+   handle => \*STDOUT,
+   on_write_ready => 1,
+);
 
 @handles = $poll->handles();
-is_deeply( \@handles, [ $S1 ], '@handles after removing stdout_notifier' );
+is_deeply( \@handles, [ $S1 ], '@handles after unwatching STDOUT' );
 
 # HUP
 
-$notifier->want_writeready( 0 );
+$loop->unwatch_io(
+   handle => $S1,
+   on_write_ready => 1,
+);
+
 $readready = 0;
 $ready = $loop->loop_once( 0.1 );
 
@@ -155,26 +154,25 @@ is( $readready, 1, '$readready after HUP' );
 
 # Removal
 
-$loop->remove( $notifier );
-
-is( $notifier->get_loop, undef, '$notifier->__memberof_set is undef' );
+$loop->unwatch_io(
+   handle => $S1,
+   on_read_ready => 1,
+);
 
 @handles = $poll->handles();
 is( scalar @handles, 0, '@handles after removal' );
 
 # HUP of pipe
 
-pipe( my ( $P1, $P2 ) ) or die "Cannot pipe() - $!";
-my ( $N1, $N2 ) = map {
-   IO::Async::Notifier->new( read_handle => $_,
-      on_read_ready   => sub { $readready = 1; },
-      want_writeready => 0,
-   ) } ( $P1, $P2 );
+my ( $P1, $P2 ) = $loop->pipepair() or die "Cannot pipepair - $!";
 
-$loop->add( $N1 );
+$loop->watch_io(
+   handle => $P1,
+   on_read_ready => sub { $readready = 1 },
+);
 
 @handles = $poll->handles();
-is_deeply( \@handles, [ $P1 ], '@handles after adding pipe_notifier' );
+is_deeply( \@handles, [ $P1 ], '@handles after watching pipe' );
 
 $readready = 0;
 $ready = $loop->loop_once( 0.1 );
@@ -182,7 +180,6 @@ $ready = $loop->loop_once( 0.1 );
 is( $ready, 0, '$ready before pipe HUP' );
 is( $readready, 0, '$readready before pipe HUP' );
 
-undef $N2;
 close( $P2 );
 
 $readready = 0;
@@ -191,21 +188,26 @@ $ready = $loop->loop_once( 0.1 );
 is( $ready, 1, '$ready after pipe HUP' );
 is( $readready, 1, '$readready after pipe HUP' );
 
-$loop->remove( $N1 );
+$loop->unwatch_io(
+   handle => $P1,
+   on_read_ready => 1,
+);
 
 @handles = $poll->handles();
-is( scalar @handles, 0, '@handles after removing pipe_notifier' );
+is( scalar @handles, 0, '@handles after unwatching pipe' );
 
 # Constructor with implied poll object
 
 undef $loop;
 $loop = IO::Async::Loop::IO_Ppoll->new();
 
-$loop->add( $notifier );
-$notifier->want_writeready( 1 );
+$loop->watch_io(
+   handle => $S1,
+   on_write_ready => sub { $writeready = 1 },
+);
 
 $writeready = 0;
 
 $ready = $loop->loop_once( 0.1 );
-is( $ready, 2, '$ready after loop_once with implied IO::Ppoll' );
+is( $ready, 1, '$ready after loop_once with implied IO::Ppoll' );
 is( $writeready, 1, '$writeready after loop_once with implied IO::Ppoll' );
