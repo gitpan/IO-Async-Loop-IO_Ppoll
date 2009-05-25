@@ -102,15 +102,15 @@ is( $writeready, 1, '$writeready after loop_once' );
 # loop_forever
 
 $loop->watch_io(
-   handle => \*STDOUT,
+   handle => $S2,
    on_write_ready => sub { $loop->loop_stop() },
 );
 
 @handles = $poll->handles();
 # We can't guarantee the order here, but we can get 'sort' to do that
 is_deeply( [ sort @handles ],
-           [ sort ( $S1, \*STDOUT ) ],
-           '@handles after watching STDOUT' );
+           [ sort ( $S1, $S2 ) ],
+           '@handles after watching $S2' );
 
 $writeready = 0;
 
@@ -124,12 +124,12 @@ alarm( 0 );
 is( $writeready, 1, '$writeready after loop_forever' );
 
 $loop->unwatch_io(
-   handle => \*STDOUT,
+   handle => $S2,
    on_write_ready => 1,
 );
 
 @handles = $poll->handles();
-is_deeply( \@handles, [ $S1 ], '@handles after unwatching STDOUT' );
+is_deeply( \@handles, [ $S1 ], '@handles after unwatching $S2' );
 
 # HUP
 

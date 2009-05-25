@@ -1,5 +1,11 @@
 Revision history for IO-Async-Loop-IO_Ppoll
 
+0.04    CHANGES:
+         * Added 'use warnings'
+
+        BUGFIXES:
+         * Don't rely on writability of STDOUT during test scripts
+
 0.03    CHANGES:
          * Updated for IO-Async 0.20
 

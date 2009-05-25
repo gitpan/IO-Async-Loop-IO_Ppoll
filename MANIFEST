@@ -7,3 +7,4 @@ META.yml
 t/00use.t
 t/01poll-io.t
 t/02poll-sig.t
+t/03poll-timing.t

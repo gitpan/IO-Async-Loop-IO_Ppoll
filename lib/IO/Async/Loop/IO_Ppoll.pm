@@ -6,8 +6,9 @@
 package IO::Async::Loop::IO_Ppoll;
 
 use strict;
+use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use IO::Async::Loop::IO_Poll 0.18;
 use base qw( IO::Async::Loop::IO_Poll );
