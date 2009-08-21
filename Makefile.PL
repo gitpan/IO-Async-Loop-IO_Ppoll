@@ -5,11 +5,8 @@ WriteMakefile
           'NAME' => 'IO::Async::Loop::IO_Ppoll',
           'VERSION_FROM' => 'lib/IO/Async/Loop/IO_Ppoll.pm',
           'PREREQ_PM' => {
-                           'IO::Async::Loop' => '0.2',
-                           'IO::Ppoll' => '0.05',
-                           'Test::Exception' => 0,
-                           'Test::More' => 0,
-                           'Time::HiRes' => 0
+                           'IO::Async::Loop::Ppoll' => '0.05',
+                           'Test::More' => 0
                          },
           'INSTALLDIRS' => 'site',
           'EXE_FILES' => [],

@@ -1,5 +1,9 @@
 Revision history for IO-Async-Loop-IO_Ppoll
 
+0.05    CHANGES:
+         * Turned into a trivial backward-compatibility wrapper around 
+           IO::Async::Loop::Ppoll
+
 0.04    CHANGES:
          * Added 'use warnings'
 

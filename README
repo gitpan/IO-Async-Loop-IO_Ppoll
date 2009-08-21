@@ -1,0 +1,14 @@
+NAME
+    "IO::Async::Loop::IO_Ppoll" - compatibility wrapper for
+    IO::Async::Loop::Ppoll
+
+DESCRIPTION
+    This class is a compatibility wrapper for programs that expect to find
+    the Loop subclass which uses IO::Ppoll under this name. It was renamed
+    to "IO::Async::Loop::Ppoll".
+
+    Any program still referring to this class directly should be changed.
+
+AUTHOR
+    Paul Evans <leonerd@leonerd.org.uk>
+
