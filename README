@@ -1,13 +1,17 @@
 NAME
-    "IO::Async::Loop::IO_Ppoll" - compatibility wrapper for
+    `IO::Async::Loop::IO_Ppoll' - compatibility wrapper for
     IO::Async::Loop::Ppoll
 
 DESCRIPTION
     This class is a compatibility wrapper for programs that expect to find
     the Loop subclass which uses IO::Ppoll under this name. It was renamed
-    to "IO::Async::Loop::Ppoll".
+    to `IO::Async::Loop::Ppoll'. The API is exactly the same, only under a
+    different name.
 
     Any program still referring to this class directly should be changed.
+    This object constructor will print a warning when the object is created.
+
+    Version 0.06 will likely be the last release of this distribution.
 
 AUTHOR
     Paul Evans <leonerd@leonerd.org.uk>

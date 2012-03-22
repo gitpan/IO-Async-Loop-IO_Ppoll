@@ -1,14 +1,16 @@
 #  You may distribute under the terms of either the GNU General Public License
 #  or the Artistic License (the same terms as Perl itself)
 #
-#  (C) Paul Evans, 2007-2009 -- leonerd@leonerd.org.uk
+#  (C) Paul Evans, 2007-2012 -- leonerd@leonerd.org.uk
 
 package IO::Async::Loop::IO_Ppoll;
 
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+use Carp;
+
+our $VERSION = '0.06';
 
 use base qw( IO::Async::Loop::Ppoll );
 
@@ -21,17 +23,26 @@ L<IO::Async::Loop::Ppoll>
 
 This class is a compatibility wrapper for programs that expect to find the
 Loop subclass which uses L<IO::Ppoll> under this name. It was renamed to
-C<IO::Async::Loop::Ppoll>.
+C<IO::Async::Loop::Ppoll>. The API is exactly the same, only under a different
+name.
 
-Any program still referring to this class directly should be changed.
+Any program still referring to this class directly should be changed. This
+object constructor will print a warning when the object is created.
+
+Version 0.06 will likely be the last release of this distribution.
 
 =cut
 
-# Keep perl happy; keep Britain tidy
-1;
-
-__END__
+sub new
+{
+   carp "IO::Async::Loop::IO_Ppoll is deprecated, and now called IO::Async::Loop::Ppoll. Please update your code";
+   shift->SUPER::new( @_ );
+}
 
 =head1 AUTHOR
 
 Paul Evans <leonerd@leonerd.org.uk>
+
+=cut
+
+0x55AA;

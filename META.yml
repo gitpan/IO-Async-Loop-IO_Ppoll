@@ -1,23 +1,22 @@
 ---
-name: IO-Async-Loop-IO_Ppoll
-version: 0.05
+abstract: "compatibility wrapper for\nL<IO::Async::Loop::Ppoll>"
 author:
   - 'Paul Evans <leonerd@leonerd.org.uk>'
-abstract: |-
-  compatibility wrapper for
-  L<IO::Async::Loop::Ppoll>
-license: perl
-resources:
-  license: http://dev.perl.org/licenses/
-requires:
-  IO::Async::Loop::Ppoll: 0.05
 build_requires:
   Test::More: 0
-provides:
-  IO::Async::Loop::IO_Ppoll:
-    file: lib/IO/Async/Loop/IO_Ppoll.pm
-    version: 0.05
-generated_by: Module::Build version 0.33
+dynamic_config: 1
+generated_by: 'Module::Build version 0.38, CPAN::Meta::Converter version 2.120630'
+license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
+name: IO-Async-Loop-IO_Ppoll
+provides:
+  IO::Async::Loop::IO_Ppoll:
+    file: lib/IO/Async/Loop/IO_Ppoll.pm
+    version: 0.06
+requires:
+  IO::Async::Loop::Ppoll: 0.05
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.06

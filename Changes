@@ -1,5 +1,11 @@
 Revision history for IO-Async-Loop-IO_Ppoll
 
+0.06    CHANGES:
+         * Throw a deprecation warning at construction time, because it's been
+           dead a long time now...
+
+        0.06 will likely be the last release of this distribution
+
 0.05    CHANGES:
          * Turned into a trivial backward-compatibility wrapper around 
            IO::Async::Loop::Ppoll

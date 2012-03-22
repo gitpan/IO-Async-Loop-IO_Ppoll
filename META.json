@@ -1,0 +1,41 @@
+{
+   "abstract" : "compatibility wrapper for\nL<IO::Async::Loop::Ppoll>",
+   "author" : [
+      "Paul Evans <leonerd@leonerd.org.uk>"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.120630",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "IO-Async-Loop-IO_Ppoll",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Test::More" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "IO::Async::Loop::Ppoll" : "0.05"
+         }
+      }
+   },
+   "provides" : {
+      "IO::Async::Loop::IO_Ppoll" : {
+         "file" : "lib/IO/Async/Loop/IO_Ppoll.pm",
+         "version" : "0.06"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ]
+   },
+   "version" : "0.06"
+}
